@@ -49,7 +49,7 @@ public class SwerveModuleNeo extends SubsystemBase{
 
         //if()
         double driveA = targetState.speedMetersPerSecond*dM*0.8;
-        double driveB = Math.signum(driveA)*0.01;
+        double driveB = Math.signum(driveA)*0.03;
         drive.set(driveA+driveB);
     }
 
@@ -85,7 +85,8 @@ public class SwerveModuleNeo extends SubsystemBase{
         targetState = new SwerveModuleState(metersPerSecond, angle);
         if(optimize) SwerveModuleState.optimize(targetState, getRotation());
     }
-    public void setTargetState(SwerveModuleState target) {
+    public void setTargetState(SwerveModuleState target, boolean optimize) {
         targetState = target;
+        if(optimize) targetState = SwerveModuleState.optimize(targetState, getRotation());
     }
 }

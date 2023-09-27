@@ -77,10 +77,10 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("Back Right Target", targetStates[3].angle.getDegrees());
 
         // set the stuff
-        m_frontLeftModule .setTargetState(targetStates[0]);
-        m_frontRightModule.setTargetState(targetStates[1]);
-        m_backLeftModule  .setTargetState(targetStates[2]);
-        m_backRightModule .setTargetState(targetStates[3]);
+        m_frontLeftModule .setTargetState(targetStates[0], true);
+        m_frontRightModule.setTargetState(targetStates[1], true);
+        m_backLeftModule  .setTargetState(targetStates[2], true);
+        m_backRightModule .setTargetState(targetStates[3], true);
 
         
         // temp debug stuff
