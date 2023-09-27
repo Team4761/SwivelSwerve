@@ -102,7 +102,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     //swerveDrive.swerveDriveR(xbox.getLeftY(), -xbox.getLeftX(), xbox.getRightX());
-    swerveDrive.swerveDriveR(-deadzone(xbox.getLeftY(), 0.08), -deadzone(xbox.getLeftX(), 0.08), -deadzone(xbox.getRightX()*90, 0.08));
+    swerveDrive.swerveDriveR(-deadzone(xbox.getLeftY(), 0.08), -deadzone(xbox.getLeftX(), 0.08), -deadzone(xbox.getRightX(), 0.08)*0.4);
     
     CommandScheduler.getInstance().run();
     //swerveDrive.periodic();

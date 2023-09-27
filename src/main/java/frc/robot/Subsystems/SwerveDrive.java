@@ -112,12 +112,12 @@ public class SwerveDrive extends SubsystemBase {
     // robot oriented, m/s, m/s, rad/s or something
     public void swerveDriveR(double speed, double strafe, double speedRot) {
 
-        targetStates = m_kinematics.toSwerveModuleStates(new ChassisSpeeds(speed, strafe, 0/*speedRot 0 cause broke */));
+        targetStates = m_kinematics.toSwerveModuleStates(new ChassisSpeeds(speed, strafe, speedRot));
     }
     // car, m/s, degrees    
     public void carDrive(double speed, double turn) {
         turn = MathUtil.clamp(turn, -90, 90);
-
+        
         // do the optimize thing
         
         targetStates[0] = new SwerveModuleState(speed, new Rotation2d(turn*0.0174533));

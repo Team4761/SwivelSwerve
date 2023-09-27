@@ -41,7 +41,6 @@ public class SwerveModuleNeo extends SubsystemBase{
     public void go() {
         //System.out.println("speed: "+targetState.speedMetersPerSecond);
         // get to the set positions 
-        drive.set(targetState.speedMetersPerSecond/2.0*dM);
             
         //System.out.println(targetState.angle.getDegrees()+", "+getRotation().getDegrees()+", "+sM);
         double steerA = MathStuff.subtract(targetState.angle, getRotation()).getRotations()*sM*0.8;
@@ -49,6 +48,9 @@ public class SwerveModuleNeo extends SubsystemBase{
         steer.set(steerA+steerB);
 
         //if()
+        double driveA = targetState.speedMetersPerSecond*dM*0.8;
+        double driveB = Math.signum(driveA)*0.01;
+        drive.set(driveA+driveB);
     }
 
     public void setSpeeds(double d, double s) {
@@ -63,7 +65,7 @@ public class SwerveModuleNeo extends SubsystemBase{
         );
     }
     public Rotation2d getRotation() {
-        return new Rotation2d((encoder.getAbsolutePosition() + offset) * 0.0174533);
+        return new Rotation2d((encoder.getAbsolutePosition() + offset + 90) * 0.0174533);
     }
 
     // -1 to 1
