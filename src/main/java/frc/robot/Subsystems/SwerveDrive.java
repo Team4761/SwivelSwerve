@@ -32,7 +32,8 @@ public class SwerveDrive extends SubsystemBase {
     private SwerveModuleNeo m_backLeftModule   = new SwerveModuleNeo(7 , 8 ,3 , 115, -1.0, -1.0);
     private SwerveModuleNeo m_backRightModule  = new SwerveModuleNeo(5 , 2 , 1 , -47, -1.0,  1.0);
 
-    //private ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
+    private ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
+    private Rotation2d gyroOffset = new Rotation2d();
 
     private SwerveDriveKinematics m_kinematics;
 
@@ -76,6 +77,8 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("Back Left Target", targetStates[2].angle.getDegrees());
         SmartDashboard.putNumber("Back Right Target", targetStates[3].angle.getDegrees());
 
+        SmartDashboard.putNumber("Gyro Angle", m_gyro.getRotation2d().minus(gyroOffset).getDegrees());
+
         // set the stuff
         m_frontLeftModule .setTargetState(targetStates[0], true);
         m_frontRightModule.setTargetState(targetStates[1], true);
@@ -106,9 +109,14 @@ public class SwerveDrive extends SubsystemBase {
 
     // field oriented, m/s, m/s, rad/s or something, i think x is forward
     public void swerveDriveF(double speedX, double speedY, double speedRot) {
-        targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot, /*m_gyro.getRotation2d()*/new Rotation2d()));
+        targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot, m_gyro.getRotation2d().minus(gyroOffset)));
 
     }
+//for on the go field oriented and stuff
+    public void zeroGyro() {
+        gyroOffset=m_gyro.getRotation2d();
+    }
+
     // robot oriented, m/s, m/s, rad/s or something
     public void swerveDriveR(double speed, double strafe, double speedRot) {
 
@@ -130,7 +138,7 @@ public class SwerveDrive extends SubsystemBase {
     // stuff
     // degrees
     public double getGyroAngle() {
-        return 0;//m_gyro.getAngle();
+        return m_gyro.getAngle();
     }
 
     public void stop() {

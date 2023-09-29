@@ -43,8 +43,8 @@ public class SwerveModuleNeo extends SubsystemBase{
         // get to the set positions 
             
         //System.out.println(targetState.angle.getDegrees()+", "+getRotation().getDegrees()+", "+sM);
-        double steerA = MathStuff.subtract(targetState.angle, getRotation()).getRotations()*sM*0.8;
-        double steerB = Math.signum(steerA)*0.01;
+        double steerA = MathStuff.subtract(targetState.angle, getRotation()).getRotations()*sM;
+        double steerB = Math.signum(steerA)*0.008;
         steer.set(steerA+steerB);
 
         //if()
@@ -63,6 +63,12 @@ public class SwerveModuleNeo extends SubsystemBase{
             drive.getEncoder().getPosition(), 
             new Rotation2d(encoder.getAbsolutePosition() * 0.0174533) // 2048 ticks to radians is 2pi/2048
         );
+    }
+    public double getDriveVelocity() { //rpms default supposedy, actual drive speed affected by gear ratio and wheel circumfernce
+        return drive.getEncoder().getVelocity(); //*gearratio*circumference=m/s except needs units adjustment
+    }
+    public double getSteerVelocity() { //rpms default, affected by gear ratio
+        return steer.getEncoder().getVelocity(); // /gearratio=rpms of the wheel spinning
     }
     public Rotation2d getRotation() {
         return new Rotation2d((encoder.getAbsolutePosition() + offset + 90) * 0.0174533);
