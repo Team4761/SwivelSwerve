@@ -43,7 +43,7 @@ public class SwerveModuleNeo extends SubsystemBase{
         // get to the set positions 
             
         //System.out.println(targetState.angle.getDegrees()+", "+getRotation().getDegrees()+", "+sM);
-        double steerA = MathStuff.subtract(targetState.angle, getRotation()).getRotations()*sM;
+        double steerA = MathStuff.subtract(targetState.angle, getRotation()).getRotations()*sM*2.5;
         double steerB = Math.signum(steerA)*0.008;
         steer.set(steerA+steerB);
 

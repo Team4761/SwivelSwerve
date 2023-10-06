@@ -40,6 +40,8 @@ public class SwerveDrive extends SubsystemBase {
     private SwerveDriveOdometry m_odometry;
     private Pose2d m_pose;
 
+    private Rotation2d pointDir = new Rotation2d();
+
 
     // positions of the wheels relative to center (meters?)
     public SwerveDrive (Translation2d fL, Translation2d fR, Translation2d bL, Translation2d bR) {
@@ -109,8 +111,19 @@ public class SwerveDrive extends SubsystemBase {
 
     // field oriented, m/s, m/s, rad/s or something, i think x is forward
     public void swerveDriveF(double speedX, double speedY, double speedRot) {
-        targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot, m_gyro.getRotation2d().minus(gyroOffset)));
+        SmartDashboard.putNumber("Gyro Target", pointDir.getDegrees());
 
+
+        if (speedRot == 0) {
+            double rotP = pointDir.minus(getGyroRotation()).getDegrees()/720*0.1;
+            if (Math.abs(rotP)<0.04) rotP=0;
+            targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, rotP, getGyroRotation()));
+        
+        } else {
+            targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.15, getGyroRotation()));
+            pointDir = getGyroRotation();
+        }
+        
     }
 //for on the go field oriented and stuff
     public void zeroGyro() {
@@ -138,7 +151,10 @@ public class SwerveDrive extends SubsystemBase {
     // stuff
     // degrees
     public double getGyroAngle() {
-        return m_gyro.getAngle();
+        return m_gyro.getRotation2d().minus(gyroOffset).getDegrees();
+    }
+    public Rotation2d getGyroRotation() {
+        return m_gyro.getRotation2d().minus(gyroOffset);
     }
 
     public void stop() {
