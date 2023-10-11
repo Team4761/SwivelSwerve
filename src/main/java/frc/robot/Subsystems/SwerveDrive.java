@@ -26,11 +26,11 @@ public class SwerveDrive extends SubsystemBase {
 
     SwerveModuleState[] targetStates = new SwerveModuleState[4];
 
-    // motors offset in degrees
-    private SwerveModuleNeo m_frontLeftModule  = new SwerveModuleNeo(3 , 1 , 2 , -88, -1.0,  1.0);
-    private SwerveModuleNeo m_frontRightModule = new SwerveModuleNeo(4 , 6 , 4 , -9, -1.0, -1.0);
-    private SwerveModuleNeo m_backLeftModule   = new SwerveModuleNeo(7 , 8 ,3 , 115, -1.0, -1.0);
-    private SwerveModuleNeo m_backRightModule  = new SwerveModuleNeo(5 , 2 , 1 , -47, -1.0,  1.0);
+    // motors offset in degrees && i think negative is ccw
+    private SwerveModuleNeo m_frontLeftModule  = new SwerveModuleNeo(3 , 1 , 2 , -104, -1.0,  1.0);
+    private SwerveModuleNeo m_frontRightModule = new SwerveModuleNeo(4 , 6 , 4 , -12, -1.0, -1.0);
+    private SwerveModuleNeo m_backLeftModule   = new SwerveModuleNeo(7 , 8 ,3 , 118, -1.0, -1.0);
+    private SwerveModuleNeo m_backRightModule  = new SwerveModuleNeo(5 , 2 , 1 , -50, -1.0,  1.0);
 
     private ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
     private Rotation2d gyroOffset = new Rotation2d();
@@ -109,9 +109,11 @@ public class SwerveDrive extends SubsystemBase {
     // drives
     // try applying acceleration cap to inputs in drives instead of on wheels
 
+    private int lastDone = 10;
     // field oriented, m/s, m/s, rad/s or something, i think x is forward
     public void swerveDriveF(double speedX, double speedY, double speedRot) {
         SmartDashboard.putNumber("Gyro Target", pointDir.getDegrees());
+
 
 
         // input squaring
@@ -119,24 +121,32 @@ public class SwerveDrive extends SubsystemBase {
         speedX*=squareFactor;
         speedY*=squareFactor;
 
+
+        if(lastDone==0) {
+            pointDir = getGyroRotation();
+        }
         // if not turning do lock on
         if (speedRot == 0) {
             double rotP = pointDir.minus(getGyroRotation()).getDegrees()*0.001; // proportional
             //rotP += Math.signum(rotP)*0.00005;
-            if (Math.abs(rotP)<0.001) rotP=0;
+            if (Math.abs(rotP)<0.001 || lastDone>0) rotP=0;
             targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, rotP, getGyroRotation()));
-        
+            
+            lastDone--;
         } else { // if turning dont proportional
             // need 
             speedRot=Math.signum(speedRot)*speedRot*speedRot;
 
             targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.15, getGyroRotation()));
             pointDir = getGyroRotation();
+
+            lastDone = 10;
         }
         
     }
 //for on the go field oriented and stuff
     public void zeroGyro() {
+        pointDir = pointDir.minus(getGyroRotation());
         gyroOffset=m_gyro.getRotation2d();
     }
 
