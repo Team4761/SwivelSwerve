@@ -114,12 +114,22 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("Gyro Target", pointDir.getDegrees());
 
 
+        // input squaring
+        double squareFactor = Math.sqrt(speedX*speedX+speedY*speedY);
+        speedX*=squareFactor;
+        speedY*=squareFactor;
+
+        // if not turning do lock on
         if (speedRot == 0) {
-            double rotP = pointDir.minus(getGyroRotation()).getDegrees()/720*0.1;
-            if (Math.abs(rotP)<0.04) rotP=0;
+            double rotP = pointDir.minus(getGyroRotation()).getDegrees()*0.001; // proportional
+            //rotP += Math.signum(rotP)*0.00005;
+            if (Math.abs(rotP)<0.001) rotP=0;
             targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, rotP, getGyroRotation()));
         
-        } else {
+        } else { // if turning dont proportional
+            // need 
+            speedRot=Math.signum(speedRot)*speedRot*speedRot;
+
             targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.15, getGyroRotation()));
             pointDir = getGyroRotation();
         }
