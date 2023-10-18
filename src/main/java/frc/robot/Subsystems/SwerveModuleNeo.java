@@ -61,7 +61,7 @@ public class SwerveModuleNeo extends SubsystemBase{
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
             drive.getEncoder().getPosition(), 
-            new Rotation2d(encoder.getAbsolutePosition() * 0.0174533) // 2048 ticks to radians is 2pi/2048
+            getRotation() // 2048 ticks to radians is 2pi/2048
         );
     }
     public double getDriveVelocity() { //rpms default supposedy, actual drive speed affected by gear ratio and wheel circumfernce

@@ -27,10 +27,17 @@ public class SwerveDrive extends SubsystemBase {
     SwerveModuleState[] targetStates = new SwerveModuleState[4];
 
     // motors offset in degrees && i think negative is ccw
-    private SwerveModuleNeo m_frontLeftModule  = new SwerveModuleNeo(3 , 1 , 2 , -104, -1.0,  1.0);
-    private SwerveModuleNeo m_frontRightModule = new SwerveModuleNeo(4 , 6 , 4 , -12, -1.0, -1.0);
-    private SwerveModuleNeo m_backLeftModule   = new SwerveModuleNeo(7 , 8 ,3 , 118, -1.0, -1.0);
-    private SwerveModuleNeo m_backRightModule  = new SwerveModuleNeo(5 , 2 , 1 , -50, -1.0,  1.0);
+    private SwerveModuleNeo m_frontLeftModule  = new SwerveModuleNeo(3 , 1 , 2 , -98.5, -1.0,  1.0);
+    private SwerveModuleNeo m_frontRightModule = new SwerveModuleNeo(4 , 6 , 4 , -6, -1.0, -1.0);
+    private SwerveModuleNeo m_backLeftModule   = new SwerveModuleNeo(7 , 8 ,3 , 112, -1.0, -1.0);
+    private SwerveModuleNeo m_backRightModule  = new SwerveModuleNeo(5 , 2 , 1 , -53, -1.0,  1.0);
+
+    private SwerveModulePosition[] m_swervePositions= new SwerveModulePosition[] {
+        m_frontLeftModule.getPosition(), 
+        m_frontRightModule.getPosition(),
+        m_backLeftModule.getPosition(), 
+        m_backRightModule.getPosition()
+    };
 
     private ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
     private Rotation2d gyroOffset = new Rotation2d();
@@ -46,6 +53,8 @@ public class SwerveDrive extends SubsystemBase {
     // positions of the wheels relative to center (meters?)
     public SwerveDrive (Translation2d fL, Translation2d fR, Translation2d bL, Translation2d bR) {
         m_kinematics = new SwerveDriveKinematics(fL, fR, bL, bR);
+        m_pose = new Pose2d();
+        m_odometry =  new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), m_swervePositions, m_pose);
     }
     
     public static SwerveDrive getInstance() {
@@ -57,16 +66,14 @@ public class SwerveDrive extends SubsystemBase {
 
         
         // update pose
-        //crashes code because of course it does
-        /*m_pose = m_odometry.update(
-            //m_gyro.getRotation2d(),
-            new Rotation2d(),
-            new SwerveModulePosition[] {
-                m_frontLeftModule.getPosition(), 
-                m_frontRightModule.getPosition(),
-                m_backLeftModule.getPosition(), 
-                m_backRightModule.getPosition()
-        });*/
+        m_pose = m_odometry.update(
+            m_gyro.getRotation2d(),
+            m_swervePositions
+        );
+
+        SmartDashboard.putNumber("Odometry x", m_pose.getX());
+        SmartDashboard.putNumber("Odometry y", m_pose.getY());
+
         
         SmartDashboard.putNumber("Front Left Rot", m_frontLeftModule.getRotation().getDegrees());
         SmartDashboard.putNumber("Front Right Rot", m_frontRightModule.getRotation().getDegrees());
@@ -137,7 +144,7 @@ public class SwerveDrive extends SubsystemBase {
             // need 
             speedRot=Math.signum(speedRot)*speedRot*speedRot;
 
-            targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.15, getGyroRotation()));
+            targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.1, getGyroRotation()));
             pointDir = getGyroRotation();
 
             lastDone = 10;
@@ -147,7 +154,7 @@ public class SwerveDrive extends SubsystemBase {
 //for on the go field oriented and stuff
     public void zeroGyro() {
         pointDir = pointDir.minus(getGyroRotation());
-        gyroOffset=m_gyro.getRotation2d();
+        gyroOffset = m_gyro.getRotation2d();
     }
 
     // robot oriented, m/s, m/s, rad/s or something

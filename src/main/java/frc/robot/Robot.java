@@ -102,8 +102,19 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     //swerveDrive.swerveDriveR(xbox.getLeftY(), -xbox.getLeftX(), xbox.getRightX());
-    swerveDrive.swerveDriveF(deadzone(xbox.getLeftX(), 0.12), -deadzone(xbox.getLeftY(), 0.12), -deadzone(xbox.getRightX(), 0.12));
+
+    //inverse of magnitude to normalize x and y
+    double xyCof = 0.75/Math.max(0.001, Math.sqrt(Math.pow(deadzone(xbox.getLeftX(), 0.1), 2)+Math.pow(deadzone(xbox.getLeftY(), 0.1), 2)));
+    swerveDrive.swerveDriveF(xyCof*deadzone(xbox.getLeftX(), 0.1)*(xbox.getLeftTriggerAxis()+xbox.getRightTriggerAxis()), -xyCof*deadzone(xbox.getLeftY(), 0.1)*(xbox.getLeftTriggerAxis()+xbox.getRightTriggerAxis()), -deadzone(xbox.getRightX(), 0.08));
     
+
+    double input = 1;
+if(input>1) {
+  //do whatever in here
+} else if (input>-1) {
+  //runs if input<=1
+}
+
     if(xbox.getXButtonPressed()) {
       swerveDrive.zeroGyro();
     }
