@@ -55,6 +55,7 @@ public class SwerveDrive extends SubsystemBase {
         m_kinematics = new SwerveDriveKinematics(fL, fR, bL, bR);
         m_pose = new Pose2d();
         m_odometry =  new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), m_swervePositions, m_pose);
+        targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, getGyroRotation()));
     }
     
     public static SwerveDrive getInstance() {
@@ -63,13 +64,20 @@ public class SwerveDrive extends SubsystemBase {
 
     @Override
     public void periodic() {
-
+        m_swervePositions= new SwerveModulePosition[] {
+            m_frontLeftModule.getPosition(), 
+            m_frontRightModule.getPosition(),
+            m_backLeftModule.getPosition(), 
+            m_backRightModule.getPosition()
+        };
         
         // update pose
         m_pose = m_odometry.update(
             m_gyro.getRotation2d(),
             m_swervePositions
         );
+
+        //forward is -y left is +x
 
         SmartDashboard.putNumber("Odometry x", m_pose.getX());
         SmartDashboard.putNumber("Odometry y", m_pose.getY());
@@ -93,13 +101,6 @@ public class SwerveDrive extends SubsystemBase {
         m_frontRightModule.setTargetState(targetStates[1], true);
         m_backLeftModule  .setTargetState(targetStates[2], true);
         m_backRightModule .setTargetState(targetStates[3], true);
-
-        
-        // temp debug stuff
-        //m_frontLeftModule .setSpeeds(0, 0.2);
-        //m_frontRightModule.setSpeeds(0, 0.2);
-        //m_backLeftModule  .setSpeeds(0, 0.2);
-        //m_backRightModule .setSpeeds(0, 0.2);
 
 
         m_frontLeftModule.go();
@@ -144,7 +145,7 @@ public class SwerveDrive extends SubsystemBase {
             // need 
             speedRot=Math.signum(speedRot)*speedRot*speedRot;
 
-            targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.1, getGyroRotation()));
+            targetStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedRot*0.09, getGyroRotation()));
             pointDir = getGyroRotation();
 
             lastDone = 10;
@@ -155,6 +156,11 @@ public class SwerveDrive extends SubsystemBase {
     public void zeroGyro() {
         pointDir = pointDir.minus(getGyroRotation());
         gyroOffset = m_gyro.getRotation2d();
+    }
+    
+    public void resetPose() {
+        m_odometry = new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), m_swervePositions);
+        m_pose = new Pose2d();
     }
 
     // robot oriented, m/s, m/s, rad/s or something
@@ -182,6 +188,10 @@ public class SwerveDrive extends SubsystemBase {
     }
     public Rotation2d getGyroRotation() {
         return m_gyro.getRotation2d().minus(gyroOffset);
+    }
+    
+    public Pose2d getPose() {
+        return m_pose;
     }
 
     public void stop() {

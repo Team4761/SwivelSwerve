@@ -4,11 +4,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Commands.SwerveGoCartesianF;
 import frc.robot.Subsystems.SwerveDrive;
 
 //import frc.robot.Subsystems.SwerveDrive;
@@ -59,16 +62,24 @@ public class Robot extends TimedRobot {
    * below with additional strings. If using the SendableChooser make sure to add them to the
    * chooser code above as well.
    */
+  
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    
+    // x should be sideways +x left
+    CommandScheduler.getInstance().schedule(new SwerveGoCartesianF(swerveDrive, new Translation2d(20, 20)));
   }
 
   /** This function is called periodically during autonomous. */
+
   @Override
   public void autonomousPeriodic() {
+
+    CommandScheduler.getInstance().run();
+    
     switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
@@ -107,16 +118,18 @@ public class Robot extends TimedRobot {
     double xyCof = 0.75/Math.max(0.001, Math.sqrt(Math.pow(deadzone(xbox.getLeftX(), 0.1), 2)+Math.pow(deadzone(xbox.getLeftY(), 0.1), 2)));
     swerveDrive.swerveDriveF(xyCof*deadzone(xbox.getLeftX(), 0.1)*(xbox.getLeftTriggerAxis()+xbox.getRightTriggerAxis()), -xyCof*deadzone(xbox.getLeftY(), 0.1)*(xbox.getLeftTriggerAxis()+xbox.getRightTriggerAxis()), -deadzone(xbox.getRightX(), 0.08));
     
-
     double input = 1;
-if(input>1) {
-  //do whatever in here
-} else if (input>-1) {
-  //runs if input<=1
-}
+    if(input>1) {
+      //do whatever in here
+    } else if (input>-1) {
+      //runs if input<=1
+    }
 
     if(xbox.getXButtonPressed()) {
       swerveDrive.zeroGyro();
+    }
+    if(xbox.getYButtonPressed()) {
+      swerveDrive.resetPose();
     }
     CommandScheduler.getInstance().run();
     //swerveDrive.periodic();
